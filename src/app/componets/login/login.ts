@@ -1,9 +1,9 @@
 
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { Field, form, maxLength, minLength, required, submit } from '@angular/forms/signals';
 import { LoginService } from '../../service/login';
 import { Router } from '@angular/router';
-import { loginBody, loginResponse } from '../../models/models';
+import { loginBody, loginResponse } from '../../models/login.model';
 
 @Component({
   selector: 'app-login',
@@ -22,6 +22,8 @@ export default class Login {
     password: ''
   });
 
+  showPassword = signal(false);
+
   loginForm = form(this.loginSignal, (param) => {
     required(param.username, {message: 'Username is required'});
     required(param.password, {message: 'Password is required'});
@@ -35,7 +37,7 @@ export default class Login {
     await submit(this.loginForm, async (form)=> {
       try {
         const data: loginResponse = await this.loginService.login(form().value());
-        if (data?.accessToken) {
+        if (this.loginService.setSession(data)) {
           this.router.navigate(['/dashboard']);
         }
       } catch (err) {
@@ -43,4 +45,5 @@ export default class Login {
       }
     });
   }
+
 }
